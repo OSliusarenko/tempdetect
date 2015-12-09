@@ -1,6 +1,6 @@
 void SD16_init(void);
 int SD16_getChipTemperature(void);
-int SD16_getSensorTemperature(void);
+unsigned SD16_getSensorData(void);
 void SD16_off(void);
 
 void SD16_init(void)
@@ -10,10 +10,10 @@ void SD16_init(void)
   SD16INCTL0 = SD16INTDLY_0;               // Interrupt on 4th sample 
 }
 
-int SD16_getSensorTemperature(void)
+unsigned int SD16_getSensorData(void)
 {
     unsigned int delta;
-    int temp;
+    unsigned int data;
 
     SD16INCTL0 |= SD16INCH_7;                  // A7+/- (calibrate)
     SD16CCTL0 |= SD16SC;                      // Start SD16 conversion
@@ -24,13 +24,12 @@ int SD16_getSensorTemperature(void)
     SD16AE |= SD16AE1;                  // Enable external input on A4+ 
     SD16CCTL0 |= SD16SC;                      // Start SD16 conversion 
     _BIS_SR(LPM0_bits + GIE);               // Enter LPM0    
-    temp = SD16MEM0 - 13653 - delta;
-    temp /= 55;
-    temp -= 270; //250;			// calibrate
+    data = SD16MEM0 - delta;
+
     SD16AE &= ~SD16AE1;                 // Disable external input A4+, A4
     SD16INCTL0 &= ~SD16INCH_4;          // Disable channel A4+/-
     
-    return temp;
+    return data;
 }
 
 int SD16_getChipTemperature(void)
